@@ -1,4 +1,4 @@
-import win32file, win32pipe, socket, time, sys, _thread
+import win32file, win32pipe, socket, sys
 
 if len(sys.argv) < 3:
     print("You need to give ip address and port separated with spaces in that order")
@@ -55,7 +55,7 @@ try:
     sock = socket.create_connection((HOST,PORT))
     print(">>connected, starting loop")
     #start the connection loop
-    _thread.start_new_thread(request_loop, (pipe,))
+    request_loop(pipe)
     #ask for user input indefinitely to keep the script running
     input()
 finally:
