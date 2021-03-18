@@ -9,7 +9,7 @@ You need socat in your host machine and this script and python intepreter in you
 
 # Running
 1. First run </br>`socat TCP-LISTEN:<port>,reuseaddr UNIX-CONNECT:/run/user/1000/discord-ipc-0` in your host.
-2. Then Run the connect.py in your guest </br>`python connect.py <your host ipv4 address> <port your used earlier> <how often the rpc shoud update in seconds>`.
+2. Then Run the connect.py in your guest </br>`python connect.py <your host ipv4 address> <port your used earlier>`.
 3. Launch your game.
 4. Enjoy.
 
