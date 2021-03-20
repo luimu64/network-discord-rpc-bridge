@@ -1,4 +1,4 @@
-import win32file, win32pipe, socket, sys
+import win32file, win32pipe, socket, sys, threading
 
 if len(sys.argv) < 3:
     print("You need to give ip address and port separated with spaces in that order")
@@ -9,26 +9,32 @@ HOST, PORT, UPDATETIMER = sys.argv[1], sys.argv[2], 2
 socket.setdefaulttimeout(10)
 
 
-def request_loop(pipe):
+def request_loop(pipe, sock):
     while True:
+    
+        #read what the client is sending into window's pipe
         try:
-            #read what the client is sending into window's pipe
             readdata = win32file.ReadFile(pipe, 2048)
-            #send the data to socat
+        except:
+            print(">>client disconnected")
+            return
+            
+        #send the data to socat if received
+        if readdata[1] != None:
             sock.sendall(readdata[1])
             print("Sent " + str(sys.getsizeof(readdata[1])) + " bytes")
-        except:
-            print(">>connection lost")
-            sys.exit()
+            
+        #receive response from socat
         try:
-            #receive response from socat
             writedata = sock.recv(2048)
-            #write the response to the pipe
+        except:
+            print(">>didn't receive data from host")
+            
+        #write the response to the pipe
+        if writedata != None:
             win32file.WriteFile(pipe, writedata)
             print("Wrote " + str(sys.getsizeof(writedata)) + " bytes")
-        except:
-            print(">>connection lost")
-            sys.exit()
+
 
 def create_winpipe():
     pipe = win32pipe.CreateNamedPipe(
@@ -44,19 +50,32 @@ def create_winpipe():
         None)
     return pipe
 
-try:
-    print(">>waiting for client")
-    #create pipe in windows
-    pipe = create_winpipe()
-    #wait until client(game) is started
-    win32pipe.ConnectNamedPipe(pipe, None)
-    print(">>got client, connecting")
-    #connect to socat host
-    sock = socket.create_connection((HOST,PORT))
-    print(">>connected, starting loop")
-    #start the connection loop
-    request_loop(pipe)
-    #ask for user input indefinitely to keep the script running
-    input()
-finally:
-    win32file.CloseHandle(pipe)
+def main():
+    while True:
+        #create pipe in windows
+        pipe = create_winpipe()
+        
+        #wait until client(game) is started
+        print(">>waiting for client")
+        win32pipe.ConnectNamedPipe(pipe, None)
+        
+        print(">>got client, connecting to host")
+        #connect to socat host
+        try:
+            sock = socket.create_connection((HOST,PORT))
+        except ConnectionRefusedError:
+            print(">>couldn't connect to host, check ip and port")
+            sys.exit()
+        print(">>connected, starting loop")
+        
+        #start the connection loop
+        request_loop(pipe, sock)
+        
+        #close the windows pipe and socket so new ones can be created
+        win32file.CloseHandle(pipe)
+        sock.close()
+
+if __name__ == "__main__":
+    x = threading.Thread(target=main, daemon=True)
+    x.start()
+    input(">>Press any key to stop\n")
