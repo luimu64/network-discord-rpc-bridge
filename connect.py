@@ -1,10 +1,18 @@
 import win32file, win32pipe, socket, sys, threading
 
-if len(sys.argv) < 3:
-    print("You need to give ip address and port separated with spaces in that order")
+#read ip address and port from config
+try:
+    config = open("config.txt")
+except FileNotFoundError:
+    print("config not found")
     sys.exit()
 
-HOST, PORT, UPDATETIMER = sys.argv[1], sys.argv[2], 2
+#very complicated way of splitting the data twice and removing whitespaces
+data = [i.split("=")[1].replace(" ", "") for i in config.read().split("\n")]
+config.close()
+
+HOST = data[0]
+PORT = data[1]
 
 socket.setdefaulttimeout(10)
 
@@ -63,9 +71,10 @@ def main():
         #connect to socat host
         try:
             sock = socket.create_connection((HOST,PORT))
-        except ConnectionRefusedError:
-            print(">>couldn't connect to host, check ip and port")
+        except (ConnectionRefusedError, socket.gaierror):
+            print(">>couldn't connect to host, check config")
             sys.exit()
+            
         print(">>connected, starting loop")
         
         #start the connection loop
