@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ "$1" = "start" ]; then
+    socat TCP-LISTEN:6969,reuseaddr,fork,max-children=1 UNIX-CONNECT:/run/user/1000/discord-ipc-0 &
+elif [  "$1" = "stop" ]; then
+    killall socat
+else
+    echo "give start or stop"
+fi
