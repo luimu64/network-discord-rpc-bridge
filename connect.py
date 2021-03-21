@@ -4,7 +4,7 @@ import win32file, win32pipe, socket, sys, threading
 try:
     config = open("config.txt")
 except FileNotFoundError:
-    print("config not found")
+    print("config not found!")
     sys.exit()
 
 #very complicated way of splitting the data twice and removing whitespaces
@@ -13,6 +13,7 @@ config.close()
 
 HOST = data[0]
 PORT = data[1]
+VERBOSE = data[2]
 
 socket.setdefaulttimeout(10)
 
@@ -30,7 +31,10 @@ def request_loop(pipe, sock):
         #send the data to socat if received
         if readdata[1] != None:
             sock.sendall(readdata[1])
-            print("Sent " + str(sys.getsizeof(readdata[1])) + " bytes")
+            if VERBOSE == "True":
+                print(">>> " + readdata[1].decode("utf-8", "ignore") + "\n")
+            else:
+                print(">>> " + str(sys.getsizeof(readdata[1])) + " bytes")
             
         #receive response from socat
         try:
@@ -41,7 +45,10 @@ def request_loop(pipe, sock):
         #write the response to the pipe
         if writedata != None:
             win32file.WriteFile(pipe, writedata)
-            print("Wrote " + str(sys.getsizeof(writedata)) + " bytes")
+            if VERBOSE == "True":
+                print("<<< " + writedata.decode("utf-8", "ignore") + "\n")
+            else:
+                print("<<< " + str(sys.getsizeof(writedata)) + " bytes")
 
 
 def create_winpipe():
