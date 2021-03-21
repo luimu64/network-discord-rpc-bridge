@@ -11,9 +11,13 @@ except FileNotFoundError:
 data = [i.split("=")[1].replace(" ", "") for i in config.read().split("\n")]
 config.close()
 
-HOST = data[0]
-PORT = data[1]
-VERBOSE = data[2]
+try:
+    HOST = data[0]
+    PORT = data[1]
+    VERBOSE = data[2] == "True" or False
+except IndexError:
+    print("something is wrong in your config")
+    sys.exit()
 
 socket.setdefaulttimeout(10)
 
@@ -31,7 +35,7 @@ def request_loop(pipe, sock):
         #send the data to socat if received
         if readdata[1] != None:
             sock.sendall(readdata[1])
-            if VERBOSE == "True":
+            if VERBOSE:
                 print(">>> " + readdata[1].decode("utf-8", "ignore") + "\n")
             else:
                 print(">>> " + str(sys.getsizeof(readdata[1])) + " bytes")
@@ -45,7 +49,7 @@ def request_loop(pipe, sock):
         #write the response to the pipe
         if writedata != None:
             win32file.WriteFile(pipe, writedata)
-            if VERBOSE == "True":
+            if VERBOSE:
                 print("<<< " + writedata.decode("utf-8", "ignore") + "\n")
             else:
                 print("<<< " + str(sys.getsizeof(writedata)) + " bytes")
