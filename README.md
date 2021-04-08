@@ -5,7 +5,7 @@ It works by first creating pipe for discord to `\\.\pipe\discord-ipc-0` in windo
 communicating with the socat receiver in linux(host) where socat writes it into `/run/user/1000/discord-ipc-0`.
 
 # Requirements
-You need socat in your host machine and either the prebuilt binary from releases or this script and python intepreter in your guest.
+You need socat in your host machine and either the prepackaged exe from releases or this script and python intepreter in your guest.
 
 # Running
 1. Do one of these in host:
