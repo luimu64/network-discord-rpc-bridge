@@ -1,3 +1,3 @@
-Host ip address = 192.168.1.69
-Host port number = 6969
-Verbose output = False
+[Host ip address]=192.168.1.69
+[Host port number]=6969
+[Verbose output]=False
